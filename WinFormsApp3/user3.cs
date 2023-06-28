@@ -1,0 +1,82 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace WinFormsApp3
+{
+    public partial class user3 : Form
+    {
+        public user3()
+        {
+            InitializeComponent();
+        }
+        public void Table()
+        {
+            dataGridView1.Rows.Clear();
+            Dao dao = new Dao();
+            string sql = $"select * from borrow where uid={Data.UID}";
+            IDataReader dc = dao.read(sql);
+            while (dc.Read())
+            {
+                dataGridView1.Rows.Add(dc[0].ToString(), dc[1].ToString(), dc[3].ToString(), dc[5].ToString());
+            }
+            dc.Close();
+            dao.DaoClose();
+        }
+        private void user3_Load(object sender, EventArgs e)
+        {
+            Table();
+            show1();
+        }
+        public void show1()
+        {
+            if(dataGridView1.Rows.Count != 0)
+            {
+                label2.Text = "编号"+dataGridView1.SelectedRows[0].Cells[0].Value.ToString();
+            }
+            else
+            {
+                label2.Text = "";
+            }
+        }
+        private void button1_Click(object sender, EventArgs e)
+        {
+            if (dataGridView1.Rows.Count != 0)
+            {
+                string id = dataGridView1.SelectedRows[0].Cells[1].Value.ToString();
+                DialogResult dr = MessageBox.Show("确认归还吗", "信息提示", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
+                if (dr == DialogResult.OK)
+                {
+                    string sql = $"delete from borrow where no ={int.Parse(dataGridView1.SelectedRows[0].Cells[0].Value.ToString())};update Instrumentation set number=number+1 where id ='{id}'";
+                    Dao dao = new Dao();
+                    if (dao.Execute(sql) > 0)
+                    {
+                        MessageBox.Show("归还成功");
+                        Table();
+                        show1();
+                    }
+                    else
+                    {
+                        MessageBox.Show("归还失败" + sql);
+                    }
+                    dao.DaoClose();
+                }
+            }
+            else
+            {
+                MessageBox.Show("没有仪器需要归还");
+            }
+        }
+
+        private void dataGridView1_Click(object sender, EventArgs e)
+        {
+            show1();
+        }
+    }
+}
